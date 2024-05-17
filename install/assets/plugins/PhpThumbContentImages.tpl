@@ -5,18 +5,18 @@
  *
  * @author    Nicola Lambathakis
  * @category    plugin
- * @version    1.0
+ * @version    1.1
  * @license	 http://www.gnu.org/copyleft/gpl.html GNU Public License (GPL)
  * @internal    @events OnLoadWebDocument
  * @internal    @installset base
  * @internal    @modx_category Images
- * @internal    @properties  &ImageSizes=Use image sizes from:;menu;imageAttribute,phpthumbParams;phpthumbParams &ImageW=Image width:;string;1200 &ImageH=Image height:;string;400 &ImageQ=Image quality:;string;80 &ImageZC=Image Zoom crop:;string;T &ImageF=Image Format:;string;webp &ImageClass= Image Class:;string;img-fluid 
+ * @internal    @properties  &ImageSizes=Use image sizes from:;menu;imageAttribute,phpthumbParams;phpthumbParams &ImageW=Image width:;string;1200 &ImageH=Image height:;string;400 &ImageQ=Image quality:;string;80 &ImageZC=Image Zoom crop:;string;T &ImageF=Image Format:;string;webp &ImageClass= Image Class:;string;img-fluid &FetchPriority=fetchpriority:;menu;no,auto,low,high;no &Loading=loading:;menu;no,lazy;no &DataSRC=Change src to data-src (for lazyload plugins):;menu;no,yes;no 
  */
 
 /*
 ###PhpThumbContentImages for Evolution CMS###
 Written By Nicola Lambathakis: http://www.tattoocms.it
-Version 1.0 
+Version 1.1 
 */
 
 $e= & $modx->Event;
@@ -49,12 +49,23 @@ case "OnLoadWebDocument":
 		}
 		//Run phpthumb	
 			$new_src = $modx->runSnippet("phpthumb", array('input'=>''.$old_src.'', 'options'=>'aoe=1,w='.$ImageW.',h='.$ImageH.',q='.$ImageQ.',zc='.$ImageZC.',f='.$ImageF.'', 'adBlockFix'=>'1'));
+		
+		//Loading attribute
+		if ($Loading != 'no') {
+			$imgTag->setAttribute('loading', $Loading);
+		}
+		//FetchPriority attribute
+		if ($FetchPriority != 'no') {
+			$imgTag->setAttribute('fetchpriority', $FetchPriority);
+		}		
 		//Replace img src url with phpthumb 	
 			$imgTag->setAttribute('src', $new_src);
-
-	 }
+	    }
 		$o = $dom->saveHTML();
-				
+		//Change src to data-src 
+		if ($DataSRC == 'yes') {
+	    $modx->documentObject['content'] = str_replace(' src="',' data-src="',$modx->documentObject['content']);
+		}
 		break;
 	default :
 		return; // stop here
