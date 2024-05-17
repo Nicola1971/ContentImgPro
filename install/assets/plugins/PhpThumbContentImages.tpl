@@ -1,7 +1,7 @@
 /**
  * PhpThumbContentImages
  *
- * Use phpthumb for Images in the content field
+ * Convert Images in the content field to phpthumb images and adds more attributes and features
  *
  * @author    Nicola Lambathakis
  * @category    plugin
