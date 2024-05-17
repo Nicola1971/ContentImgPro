@@ -3,18 +3,27 @@ Convert Images in the content field (TinyMCE) to phpthumb images and adds more a
 
 ### Plugin Configuration
 
-![screenshot-www bs4 bubuna com-2024 05 16-21_07_57](https://github.com/Nicola1971/PhpThumbContentImages/assets/7342798/7977bba5-0b0c-457d-b16d-069401bf195a)
+![screenshot-www bs4 bubuna com-2024 05 17-10_39_49](https://github.com/Nicola1971/PhpThumbContentImages/assets/7342798/95a8b6b2-03d2-4553-adfd-0471865d8947)
 
-**Use image sizes from**: get image size of phpthumb image from phpthumb snippet parameters or from image attributes (width/height)
 
-**Image width**: phpthumb options
+**Use image sizes from**: get image size for the phpthumb image:  
+1) **phpthumbParams**: from phpthumb snippet parameters (w/h) in the configuration tab
+2) **imageAttribute**: from image attributes (width/height). **NOTE**: if image width & height attributes are empty the image will not be resized
 
-**Image height**: phpthumb options
+**Image width**: phpthumb options (w)
 
-**Image quality**: phpthumb options
+**Image height**: phpthumb options (h)
 
-**Image Zoom crop**: phpthumb options
+**Image quality**: phpthumb options (q)
 
-**Image Format**: phpthumb options
+**Image Zoom crop**: phpthumb options (zc)
+
+**Image Format**: phpthumb options (f)
 
 **Image Class**: Add new or modifies image class
+
+**fetchpriority**: Add fetchpriority attribute (no/auto/low/high)
+
+**loading**: Add loading attribute (lazy)
+
+**Change src to data-src**: Change image "src" tag to "data-src" for lazyload plugins
