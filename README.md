@@ -1,5 +1,5 @@
 # PhpThumbContentImages plugin for Evolution CMS
-Use phpthumb for Images in the content field (TinyMCE)
+Convert Images in the content field (TinyMCE) to phpthumb images and adds more attributes and features
 
 ### Plugin Configuration
 
