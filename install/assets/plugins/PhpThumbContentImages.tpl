@@ -5,7 +5,7 @@
  *
  * @author    Nicola Lambathakis
  * @category    plugin
- * @version    1.1
+ * @version    1.2
  * @license	 http://www.gnu.org/copyleft/gpl.html GNU Public License (GPL)
  * @internal    @events OnLoadWebDocument
  * @internal    @installset base
@@ -16,7 +16,7 @@
 /*
 ###PhpThumbContentImages for Evolution CMS###
 Written By Nicola Lambathakis: http://www.tattoocms.it
-Version 1.1 
+Version 1.2 
 */
 
 $e= & $modx->Event;
@@ -29,8 +29,7 @@ case "OnLoadWebDocument":
 	    //Get the output from the content 
 		$o = &$modx->documentObject['content'];
 			$dom = new DOMDocument();
-			$dom->loadHTML(mb_convert_encoding($o, 'HTML-ENTITIES', 'UTF-8'));
-			$dom->loadHTML($o);
+			$dom->loadHTML(mb_convert_encoding($o, 'HTML-ENTITIES', 'UTF-8'));     
 		//Search img tag and src attribute (image url)
 			$imgTags = $dom->getElementsByTagName('img');
 			foreach ($imgTags as $imgTag) {
@@ -48,8 +47,7 @@ case "OnLoadWebDocument":
 			$imgTag->setAttribute('class', $ImageClass);
 		}
 		//Run phpthumb	
-			$new_src = $modx->runSnippet("phpthumb", array('input'=>''.$old_src.'', 'options'=>'aoe=1,w='.$ImageW.',h='.$ImageH.',q='.$ImageQ.',zc='.$ImageZC.',f='.$ImageF.'', 'adBlockFix'=>'1'));
-		
+		$new_src = $modx->runSnippet("phpthumb", array('input'=>''.$old_src.'', 'options'=>'aoe=1,w='.$ImageW.',h='.$ImageH.',q='.$ImageQ.',zc='.$ImageZC.',f='.$ImageF.'', 'adBlockFix'=>'1'));
 		//Loading attribute
 		if ($Loading != 'no') {
 			$imgTag->setAttribute('loading', $Loading);
@@ -61,11 +59,19 @@ case "OnLoadWebDocument":
 		//Replace img src url with phpthumb 	
 			$imgTag->setAttribute('src', $new_src);
 	    }
-		$o = $dom->saveHTML();
+			$html = $dom->saveHTML();
+			
+			if ($html !== false) {
+				$o = html_entity_decode($html);
+			}
 		//Change src to data-src 
 		if ($DataSRC == 'yes') {
 	    $modx->documentObject['content'] = str_replace(' src="',' data-src="',$modx->documentObject['content']);
 		}
+		//fix brackets
+		$arrFrom = array("%5B","%5D");
+		$arrTo = array("[","]");
+		$modx->documentObject['content'] = str_replace($arrFrom, $arrTo,$modx->documentObject['content']);
 		break;
 	default :
 		return; // stop here
