@@ -5,7 +5,7 @@
  *
  * @author    Nicola Lambathakis
  * @category    plugin
- * @version    1.3
+ * @version    1.4
  * @license	 http://www.gnu.org/copyleft/gpl.html GNU Public License (GPL)
  * @internal    @events OnLoadWebDocument
  * @internal    @installset base
@@ -29,7 +29,8 @@ case "OnLoadWebDocument":
 	    //Get the output from the content 
 		$o = &$modx->documentObject['content'];
 			$dom = new DOMDocument(); 
-			$dom->loadHTML($o, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
+		    $dom->loadHTML(mb_convert_encoding($o, 'HTML-ENTITIES', 'UTF-8')); 
+			
 		//Search img tag and src attribute (image url)
 			$imgTags = $dom->getElementsByTagName('img');
 			foreach ($imgTags as $imgTag) {
@@ -59,11 +60,12 @@ case "OnLoadWebDocument":
 		//Replace img src url with phpthumb 	
 			$imgTag->setAttribute('src', $new_src);
 	    }
-			$html = $dom->saveHTML();
+		//Remove doctype, html, body and saveHTML
+		$html = preg_replace('~<(?:!DOCTYPE|/?(?:html|body))[^>]*>s*~i', '', $dom->saveHTML());
 
-			if ($html !== false) {
+		if ($html !== false) {
 				$o = html_entity_decode($html);
-			}
+		}
 		//Change src to data-src 
 		if ($DataSRC == 'yes') {
 	    $modx->documentObject['content'] = str_replace(' src="',' data-src="',$modx->documentObject['content']);
