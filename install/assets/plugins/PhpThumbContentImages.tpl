@@ -5,7 +5,7 @@
  *
  * @author    Nicola Lambathakis
  * @category    plugin
- * @version    1.2
+ * @version    1.3
  * @license	 http://www.gnu.org/copyleft/gpl.html GNU Public License (GPL)
  * @internal    @events OnLoadWebDocument
  * @internal    @installset base
@@ -16,7 +16,7 @@
 /*
 ###PhpThumbContentImages for Evolution CMS###
 Written By Nicola Lambathakis: http://www.tattoocms.it
-Version 1.2 
+Version 1.3 
 */
 
 $e= & $modx->Event;
@@ -28,8 +28,8 @@ case "OnLoadWebDocument":
 		}
 	    //Get the output from the content 
 		$o = &$modx->documentObject['content'];
-			$dom = new DOMDocument();
-			$dom->loadHTML(mb_convert_encoding($o, 'HTML-ENTITIES', 'UTF-8'));     
+			$dom = new DOMDocument(); 
+			$dom->loadHTML($o, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
 		//Search img tag and src attribute (image url)
 			$imgTags = $dom->getElementsByTagName('img');
 			foreach ($imgTags as $imgTag) {
@@ -60,7 +60,7 @@ case "OnLoadWebDocument":
 			$imgTag->setAttribute('src', $new_src);
 	    }
 			$html = $dom->saveHTML();
-			
+
 			if ($html !== false) {
 				$o = html_entity_decode($html);
 			}
