@@ -1,6 +1,8 @@
 # PhpThumbContentImages plugin for Evolution CMS
 Convert Images in the content field (TinyMCE) to phpthumb images and adds more attributes and features
 
+Required: PhpThumb snippet
+
 ### Plugin Configuration
 
 ![screenshot-www bs4 bubuna com-2024 05 17-10_39_49](https://github.com/Nicola1971/PhpThumbContentImages/assets/7342798/95a8b6b2-03d2-4553-adfd-0471865d8947)
