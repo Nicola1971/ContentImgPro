@@ -5,20 +5,25 @@
  *
  * @author    Nicola Lambathakis
  * @category    plugin
- * @version    1.4
+ * @version    1.5
  * @license	 http://www.gnu.org/copyleft/gpl.html GNU Public License (GPL)
  * @internal    @events OnLoadWebDocument
  * @internal    @installset base
  * @internal    @modx_category Images
- * @internal    @properties  &ImageSizes=Use image sizes from:;menu;imageAttribute,phpthumbParams;phpthumbParams &ImageW=Image width:;string;1200 &ImageH=Image height:;string;400 &ImageQ=Image quality:;string;80 &ImageZC=Image Zoom crop:;string;T &ImageF=Image Format:;string;webp &ImageClass= Image Class:;string;img-fluid &FetchPriority=fetchpriority:;menu;no,auto,low,high;no &Loading=loading:;menu;no,lazy;no &DataSRC=Change src to data-src (for lazyload plugins):;menu;no,yes;no 
+ * @internal    @properties  &ImageSizes=Use image sizes from:;menu;imageAttribute,phpthumbParams;phpthumbParams &ImageW=Image width:;string;1200 &ImageH=Image height:;string;400 &ImageQ=Image quality:;string;80 &ImageZC=Image Zoom crop:;string;T &ImageF=Image Format:;string;webp &ImageClass= Image Class:;string;img-fluid &FetchPriority=fetchpriority:;menu;no,auto,low,high;no &Loading=loading:;menu;no,lazy;no &DataSRC=Change src to data-src (for lazyload plugins):;menu;no,yes;no  &exclude_docs=Exclude Documents by id (comma separated);string; &exclude_templates=Exclude Templates by id (comma separated);string;
  */
 
 /*
 ###PhpThumbContentImages for Evolution CMS###
 Written By Nicola Lambathakis: http://www.tattoocms.it
-Version 1.3 
+Version 1.5 
 */
-
+$exclude_docs = explode(',',$exclude_docs);
+$exclude_templates = explode(',',$exclude_templates);
+// exclude by doc id or template id
+$doc_id = $modx -> documentObject['id'];
+$template_id = $modx -> documentObject['template'];
+	if (!in_array($doc_id,$exclude_docs) && !in_array($template_id,$exclude_templates)) {		
 $e= & $modx->Event;
 switch ($e->name) {
 case "OnLoadWebDocument":
@@ -60,7 +65,7 @@ case "OnLoadWebDocument":
 		//Replace img src url with phpthumb 	
 			$imgTag->setAttribute('src', $new_src);
 	    }
-		//Remove doctype, html, body and saveHTML
+		//Remove doctype, html, body amd saveHTML
 		$html = preg_replace('~<(?:!DOCTYPE|/?(?:html|body))[^>]*>s*~i', '', $dom->saveHTML());
 
 		if ($html !== false) {
@@ -78,4 +83,5 @@ case "OnLoadWebDocument":
 	default :
 		return; // stop here
 		break;
+     }
 }
