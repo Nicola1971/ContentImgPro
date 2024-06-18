@@ -5,7 +5,8 @@ Required: PhpThumb snippet
 
 ### Plugin Configuration
 
-![screenshot-www bs4 bubuna com-2024 05 17-10_39_49](https://github.com/Nicola1971/PhpThumbContentImages/assets/7342798/95a8b6b2-03d2-4553-adfd-0471865d8947)
+![screenshot-www bs4 bubuna com-2024 06 18-10_33_17](https://github.com/Nicola1971/PhpThumbContentImages/assets/7342798/4c610121-811a-4831-8133-5600f220de87)
+
 
 
 **Use image sizes from**: get image size for the phpthumb image:  
