@@ -5,7 +5,7 @@
  *
  * @author    Nicola Lambathakis http://www.tattoocms.it/
  * @category    plugin
- * @version    1.8
+ * @version    1.9
  * @license	 http://www.gnu.org/copyleft/gpl.html GNU Public License (GPL)
  * @internal    @events OnLoadWebDocument
  * @internal    @installset base
@@ -14,7 +14,7 @@
  * @documentation Github Repository: https://github.com/Nicola1971/ContentImgPro
  * @reportissues Report Issues: https://github.com/Nicola1971/ContentImgPro/issues 
  * @lastupdate  07-11-2024
- * @internal    @properties  &ImageSizes= Use image sizes from:;menu;imageAttribute,phpthumbParams;phpthumbParams &ImageWxl= Image Width:;string;1140 &ImageHxl= Image height (if empty it will be calculated automatically):;string; &ImageQ= Image quality:;string;80 &ImageZC= Image Zoom crop:;string;T &ImageF= Image Format:;string;webp &ImageClass= Image Class:;string;img-fluid &FetchPriority=fetchpriority:;menu;auto,low,high;low &Loading=loading:;menu;lazy,eager;lazy &SearchSet=Create image responsive srcset:;menu;no,yes;no &ImageWlg= srcset Image width lg (992px):;string;964 &ImageWmd= srcset Image width md (768px):;string;724 &ImageWsm= srcset Image width sm (576px):;string;530 &DataPrefix= Append data- prefix to src and srcset:;menu;no,yes;no &exclude_docs= Exclude Documents by id (comma separated);string; &exclude_templates= Exclude Templates by id (comma separated);string;
+ * @internal    @properties  &ImageSizes= Use image sizes from:;menu;imageAttribute,phpthumbParams;phpthumbParams &ImageWxl= Image Width:;string;1140 &ImageHxl= Image height (if empty it will be calculated automatically):;string; &ImageQ= Image quality:;string;80 &ImageZC= Image Zoom crop:;string;T &ImageF= Image Format:;string;webp &ImageClass= Image Class:;string;img-fluid &FetchPriority=fetchpriority:;menu;auto,low,high;low &Loading=loading:;menu;lazy,eager;lazy &SearchSet=Create image responsive srcset:;menu;no,yes;no &Bkpxl= Breakpoint xl:;string;1200 &Bkplg= Breakpoint lg:;string;992 &ImageWlg= srcset Image width lg:;string;964 &Bkpmd= Breakpoint md:;string;768 &ImageWmd= srcset Image width md:;string;724 &Bkpsm= Breakpoint sm:;string;576 &ImageWsm= srcset Image width sm:;string;530 &DataPrefix= Append data- prefix to src and srcset:;menu;no,yes;no &exclude_docs= Exclude Documents by id (comma separated);string; &exclude_templates= Exclude Templates by id (comma separated);string;
  */
 
 //<?php
@@ -95,7 +95,7 @@ foreach ($imgTags as $imgTag) {
         }
         
         if ($SearchSet == 'yes') {
-            // Genera data-srcset o srcset con le dimensioni 300w, 600w, 900w, tutte nel formato $ImageF
+            // Genera data-srcset o srcset 
             $srcset = '';
             $widths = [$ImageWsm, $ImageWmd, $ImageWlg, $ImageWxl];
             foreach ($widths as $width) {
@@ -120,10 +120,10 @@ foreach ($imgTags as $imgTag) {
                 $imgTag->setAttribute('data-sizes', 'auto');
             } else {
                 $imgTag->setAttribute('sizes', 
-                    '(min-width: 1200px) ' . $ImageWxl . 'px, ' . 
-                    '(min-width: 992px) ' . $ImageWlg . 'px, ' . 
-                    '(min-width: 768px) ' . $ImageWmd . 'px, ' . 
-                    '(min-width: 576px) ' . $ImageWsm . 'px, 100vw');
+                    '(min-width: ' . $Bkpxl . 'px) ' . $ImageWxl . 'px, ' . 
+                    '(min-width: ' . $Bkplg . 'px) ' . $ImageWlg . 'px, ' . 
+                    '(min-width: ' . $Bkpmd . 'px) ' . $ImageWmd . 'px, ' . 
+                    '(min-width: ' . $Bkpsm . 'px) ' . $ImageWsm . 'px, 100vw');
             }
         }
     }
