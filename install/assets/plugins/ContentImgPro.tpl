@@ -1,7 +1,7 @@
 /**
  * ContentImgPro
  *
- * Convert Images in the content field to phpthumb images and adds more attributes and features
+ * Enhance and optimize images directly within content fields, adding responsive attributes, lazy loading, and SEO-friendly tags
  *
  * @author    Nicola Lambathakis
  * @category    plugin
@@ -10,7 +10,7 @@
  * @internal    @events OnLoadWebDocument
  * @internal    @installset base
  * @internal    @modx_category Images
- * @internal    @properties  &ImageSizes=Use image sizes from:;menu;imageAttribute,phpthumbParams;phpthumbParams &ImageWxl= Default Image Width (for srcset it will be used as xl (1200px)):;string;1140 &ImageHxl=Default Image height (if empty it will be calculated automatically):;string;400 &ImageQ=Image quality:;string;80 &ImageZC=Image Zoom crop:;string;T &ImageF=Image Format:;string;webp &ImageClass= Image Class:;string;img-fluid &FetchPriority=fetchpriority:;menu;no,auto,low,high;no &Loading=loading:;menu;no,lazy;no &SearchSet=Create image responsive srcset:;menu;no,yes;no &ImageWlg=srcset Image width lg (992px):;string;964 &ImageWmd=srcset Image width md (768px):;string;724 &ImageWsm=srcset Image width sm (576px):;string;530 &DataPrefix=Append data- prefix to src and srcset:;menu;no,yes;no &exclude_docs=Exclude Documents by id (comma separated);string; &exclude_templates=Exclude Templates by id (comma separated);string;
+ * @internal    @properties  &ImageSizes=Use image sizes from:;menu;imageAttribute,phpthumbParams;phpthumbParams &ImageWxl= Image Width:;string;1140 &ImageHxl= Image height (if empty it will be calculated automatically):;string;400 &ImageQ=Image quality:;string;80 &ImageZC=Image Zoom crop:;string;T &ImageF=Image Format:;string;webp &ImageClass= Image Class:;string;img-fluid &FetchPriority=fetchpriority:;menu;no,auto,low,high;no &Loading=loading:;menu;no,lazy;no &SearchSet=Create image responsive srcset:;menu;no,yes;no &ImageWlg=srcset Image width lg (992px):;string;964 &ImageWmd=srcset Image width md (768px):;string;724 &ImageWsm=srcset Image width sm (576px):;string;530 &DataPrefix=Append data- prefix to src and srcset:;menu;no,yes;no &exclude_docs=Exclude Documents by id (comma separated);string; &exclude_templates=Exclude Templates by id (comma separated);string;
  */
 
 /*
