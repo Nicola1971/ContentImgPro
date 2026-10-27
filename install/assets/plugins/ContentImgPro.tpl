@@ -5,7 +5,7 @@
  *
  * @author    Nicola Lambathakis http://www.tattoocms.it/
  * @category    plugin
- * @version    1.9
+ * @version    1.9.1
  * @license	 http://www.gnu.org/copyleft/gpl.html GNU Public License (GPL)
  * @internal    @events OnLoadWebDocument
  * @internal    @installset base
@@ -13,7 +13,7 @@
  * @documentation Documentation: https://www.tattoocms.it/extras/plugins/contentimgpro.html
  * @documentation Github Repository: https://github.com/Nicola1971/ContentImgPro
  * @reportissues Report Issues: https://github.com/Nicola1971/ContentImgPro/issues 
- * @lastupdate  07-11-2024
+ * @lastupdate  27-10-2026
  * @internal    @properties  &ImageSizes= Use image sizes from:;menu;imageAttribute,phpthumbParams;phpthumbParams &ImageWxl= Image Width:;string;1140 &ImageHxl= Image height (if empty it will be calculated automatically):;string; &ImageQ= Image quality:;string;80 &ImageZC= Image Zoom crop:;string;T &ImageF= Image Format:;string;webp &ImageClass= Image Class:;string;img-fluid &FetchPriority=fetchpriority:;menu;auto,low,high;low &Loading=loading:;menu;lazy,eager;lazy &SearchSet=Create image responsive srcset:;menu;no,yes;no &Bkpxl= Breakpoint xl:;string;1200 &Bkplg= Breakpoint lg:;string;992 &ImageWlg= srcset Image width lg:;string;964 &Bkpmd= Breakpoint md:;string;768 &ImageWmd= srcset Image width md:;string;724 &Bkpsm= Breakpoint sm:;string;576 &ImageWsm= srcset Image width sm:;string;530 &DataPrefix= Append data- prefix to src and srcset:;menu;no,yes;no &exclude_docs= Exclude Documents by id (comma separated);string; &exclude_templates= Exclude Templates by id (comma separated);string;
  */
 
@@ -23,8 +23,8 @@ if (!defined('MODX_BASE_PATH')) {
 }
 
 // Verifica se il documento o il template sono esclusi
-$exclude_docs = explode(',', $exclude_docs);
-$exclude_templates = explode(',', $exclude_templates);
+$exclude_docs = array_filter(array_map('trim', explode(',', (string)$exclude_docs)), 'strlen');
+$exclude_templates = array_filter(array_map('trim', explode(',', (string)$exclude_templates)), 'strlen');
 $doc_id = $modx->documentObject['id'];
 $template_id = $modx->documentObject['template'];
 
@@ -41,92 +41,103 @@ if (!in_array($doc_id, $exclude_docs) && !in_array($template_id, $exclude_templa
 
             // Ottieni il contenuto della pagina
             $o = &$modx->documentObject['content'];
+
+            // Esci se il contenuto è vuoto o non contiene immagini
+            // (da PHP 8 loadHTML() lancia un ValueError con stringa vuota)
+            if (trim((string)$o) === '' || stripos($o, '<img') === false) {
+                break;
+            }
+
             $dom = new DOMDocument();
-            @$dom->loadHTML(mb_convert_encoding($o, 'HTML-ENTITIES', 'UTF-8'));
+            libxml_use_internal_errors(true);
+            // mb_encode_numericentity sostituisce mb_convert_encoding(..., 'HTML-ENTITIES') deprecato da PHP 8.2
+            $dom->loadHTML(mb_encode_numericentity($o, [0x80, 0x10FFFF, 0, 0x1FFFFF], 'UTF-8'));
+            libxml_clear_errors();
 
-// Cerca i tag <img>
-$imgTags = $dom->getElementsByTagName('img');
-foreach ($imgTags as $imgTag) {
-    $old_src = $imgTag->getAttribute('src');
+            // Cerca i tag <img>
+            $imgTags = $dom->getElementsByTagName('img');
+            foreach ($imgTags as $imgTag) {
+                $old_src = $imgTag->getAttribute('src');
 
-    // Mantieni l'impostazione delle dimensioni immagine se configurato
-    if ($ImageSizes == 'imageAttribute') {
-        $ImageWxl = $imgTag->getAttribute('width');
-        $ImageHxl = $imgTag->getAttribute('height');
-    } else {
-        // Verifica se $ImageHxl è impostato solo per questa immagine
-        $currentImageHxl = $ImageHxl; // Backup del valore globale
+                // Mantieni l'impostazione delle dimensioni immagine se configurato
+                if ($ImageSizes == 'imageAttribute') {
+                    $ImageWxl = $imgTag->getAttribute('width');
+                    $ImageHxl = $imgTag->getAttribute('height');
+                } else {
+                    // Verifica se $ImageHxl è impostato solo per questa immagine
+                    $currentImageHxl = $ImageHxl; // Backup del valore globale
 
-        if (empty($currentImageHxl) && !empty($ImageWxl)) {
-            // Ottieni le dimensioni originali dell'immagine con getimagesize
-            $imagePath = MODX_BASE_PATH . $old_src;
-            if (file_exists($imagePath)) {
-                list($originalWidth, $originalHeight) = getimagesize($imagePath);
+                    if (empty($currentImageHxl) && !empty($ImageWxl)) {
+                        // Ottieni le dimensioni originali dell'immagine con getimagesize
+                        $imagePath = MODX_BASE_PATH . ltrim($old_src, '/');
+                        $size = is_file($imagePath) ? @getimagesize($imagePath) : false;
 
-                // Calcola l'altezza proporzionale per questa immagine
-                $currentImageHxl = round(($ImageWxl / $originalWidth) * $originalHeight);
-            } else {
-                $currentImageHxl = 400; // Fallback su un'altezza predefinita
-            }
-        }
+                        if ($size && $size[0] > 0) {
+                            // Calcola l'altezza proporzionale per questa immagine
+                            $currentImageHxl = round(($ImageWxl / $size[0]) * $size[1]);
+                        } else {
+                            $currentImageHxl = 400; // Fallback su un'altezza predefinita
+                        }
+                    }
 
-        // Imposta width e height per questa immagine
-        $imgTag->setAttribute('width', $ImageWxl);
-        $imgTag->setAttribute('height', $currentImageHxl);
+                    // Imposta width e height per questa immagine
+                    $imgTag->setAttribute('width', $ImageWxl);
+                    $imgTag->setAttribute('height', $currentImageHxl);
 
-		 // Aggiungi o modifica la classe delle immagini
-         if ($ImageClass != '') {
-         $imgTag->setAttribute('class', $ImageClass);
-         }
+                    // Aggiungi o modifica la classe delle immagini
+                    if ($ImageClass != '') {
+                        $imgTag->setAttribute('class', $ImageClass);
+                    }
 
-        // Usa la larghezza e l'altezza calcolate in phpthumb
-        $new_src = $modx->runSnippet("phpthumb", array(
-            'input' => $old_src,
-            'options' => 'aoe=1,w=' . $ImageWxl . ',h=' . $currentImageHxl . ',q=' . $ImageQ . ',zc=' . $ImageZC . ',f=' . $ImageF,
-            'adBlockFix' => '1'
-        ));
+                    // Usa la larghezza e l'altezza calcolate in phpthumb
+                    $new_src = $modx->runSnippet("phpthumb", array(
+                        'input' => $old_src,
+                        'options' => 'aoe=1,w=' . $ImageWxl . ',h=' . $currentImageHxl . ',q=' . $ImageQ . ',zc=' . $ImageZC . ',f=' . $ImageF,
+                        'adBlockFix' => '1'
+                    ));
 
-        // Imposta l'attributo src o data-src in base a $DataPrefix
-        if ($DataPrefix == 'yes') {
-            $imgTag->removeAttribute('src');
-            $imgTag->setAttribute('data-src', $new_src);
-        } else {
-            $imgTag->setAttribute('src', $new_src);
-        }
-        
-        if ($SearchSet == 'yes') {
-            // Genera data-srcset o srcset 
-            $srcset = '';
-            $widths = [$ImageWsm, $ImageWmd, $ImageWlg, $ImageWxl];
-            foreach ($widths as $width) {
-                $height = round(($width / $ImageWxl) * $currentImageHxl);
-                $srcset .= $modx->runSnippet("phpthumb", array(
-                    'input' => $old_src,
-                    'options' => 'aoe=1,w=' . $width . ',h=' . $height . ',q=' . $ImageQ . ',zc=' . $ImageZC . ',f=' . $ImageF,
-                    'adBlockFix' => '1'
-                )) . " {$width}w, ";
-            }
+                    // Imposta l'attributo src o data-src in base a $DataPrefix
+                    if ($DataPrefix == 'yes') {
+                        $imgTag->removeAttribute('src');
+                        $imgTag->setAttribute('data-src', $new_src);
+                    } else {
+                        $imgTag->setAttribute('src', $new_src);
+                    }
 
-            // Rimuove l'ultima virgola e imposta l'attributo srcset o data-srcset
-            $srcset = rtrim($srcset, ', ');
-            if ($DataPrefix == 'yes') {
-                $imgTag->setAttribute('data-srcset', $srcset);
-            } else {
-                $imgTag->setAttribute('srcset', $srcset);
-            }
+                    if ($SearchSet == 'yes') {
+                        // Genera data-srcset o srcset
+                        $srcset = '';
+                        $widths = [$ImageWsm, $ImageWmd, $ImageWlg, $ImageWxl];
+                        foreach ($widths as $width) {
+                            $height = round(($width / $ImageWxl) * $currentImageHxl);
+                            $srcset .= $modx->runSnippet("phpthumb", array(
+                                'input' => $old_src,
+                                'options' => 'aoe=1,w=' . $width . ',h=' . $height . ',q=' . $ImageQ . ',zc=' . $ImageZC . ',f=' . $ImageF,
+                                'adBlockFix' => '1'
+                            )) . " {$width}w, ";
+                        }
 
-            // Configura l'attributo sizes o data-sizes in base a $DataPrefix
-            if ($DataPrefix == 'yes') {
-                $imgTag->setAttribute('data-sizes', 'auto');
-            } else {
-                $imgTag->setAttribute('sizes', 
-                    '(min-width: ' . $Bkpxl . 'px) ' . $ImageWxl . 'px, ' . 
-                    '(min-width: ' . $Bkplg . 'px) ' . $ImageWlg . 'px, ' . 
-                    '(min-width: ' . $Bkpmd . 'px) ' . $ImageWmd . 'px, ' . 
-                    '(min-width: ' . $Bkpsm . 'px) ' . $ImageWsm . 'px, 100vw');
-            }
-        }
-    }
+                        // Rimuove l'ultima virgola e imposta l'attributo srcset o data-srcset
+                        $srcset = rtrim($srcset, ', ');
+                        if ($DataPrefix == 'yes') {
+                            $imgTag->setAttribute('data-srcset', $srcset);
+                        } else {
+                            $imgTag->setAttribute('srcset', $srcset);
+                        }
+
+                        // Configura l'attributo sizes o data-sizes in base a $DataPrefix
+                        if ($DataPrefix == 'yes') {
+                            $imgTag->setAttribute('data-sizes', 'auto');
+                        } else {
+                            $imgTag->setAttribute('sizes',
+                                '(min-width: ' . $Bkpxl . 'px) ' . $ImageWxl . 'px, ' .
+                                '(min-width: ' . $Bkplg . 'px) ' . $ImageWlg . 'px, ' .
+                                '(min-width: ' . $Bkpmd . 'px) ' . $ImageWmd . 'px, ' .
+                                '(min-width: ' . $Bkpsm . 'px) ' . $ImageWsm . 'px, 100vw');
+                        }
+                    }
+                }
+
                 // Imposta l'attributo loading per lazy loading, se configurato
                 if ($Loading != 'no') {
                     $imgTag->setAttribute('loading', $Loading);
@@ -141,23 +152,23 @@ foreach ($imgTags as $imgTag) {
                 $filename = basename($old_src, '.' . pathinfo($old_src, PATHINFO_EXTENSION));
                 $altText = ucwords(trim(str_replace(['-', '_'], ' ', $filename)));
 
-				// Verifica se il valore di alt è vuoto o contiene solo spazi
-				if ($imgTag->getAttribute('alt') === '') {
-    			$imgTag->setAttribute('alt', $altText);
-				}
+                // Verifica se il valore di alt è vuoto
+                if ($imgTag->getAttribute('alt') === '') {
+                    $imgTag->setAttribute('alt', $altText);
+                }
 
-				// Imposta il valore di title solo se è vuoto e se alt non è stato impostato manualmente
-				if ($imgTag->getAttribute('title') === '' && $imgTag->getAttribute('alt') === '') {
-    			$imgTag->setAttribute('title', $altText);
-				} elseif ($imgTag->getAttribute('title') === '') {
-    				// Se alt è presente ma title è vuoto, copia alt in title
-    				$imgTag->setAttribute('title', $imgTag->getAttribute('alt'));
-				}
+                // Imposta il valore di title solo se è vuoto e se alt non è stato impostato manualmente
+                if ($imgTag->getAttribute('title') === '' && $imgTag->getAttribute('alt') === '') {
+                    $imgTag->setAttribute('title', $altText);
+                } elseif ($imgTag->getAttribute('title') === '') {
+                    // Se alt è presente ma title è vuoto, copia alt in title
+                    $imgTag->setAttribute('title', $imgTag->getAttribute('alt'));
+                }
             }
 
             // Rimuove doctype, html, body e salva il nuovo HTML
             $html = preg_replace('~<(?:!DOCTYPE|/?(?:html|body))[^>]*>\s*~i', '', $dom->saveHTML());
-            if ($html !== false) {
+            if ($html !== false && $html !== null) {
                 $o = html_entity_decode($html);
             }
 
@@ -167,8 +178,8 @@ foreach ($imgTags as $imgTag) {
             }
 
             // Correggi parentesi quadre codificate
-            $arrFrom = array("%5B","%5D");
-            $arrTo = array("[","]");
+            $arrFrom = array("%5B", "%5D");
+            $arrTo = array("[", "]");
             $modx->documentObject['content'] = str_replace($arrFrom, $arrTo, $modx->documentObject['content']);
 
             break;
